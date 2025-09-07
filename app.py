@@ -26,6 +26,9 @@ class Expense(db.Model):
     date = db.Column(db.Date, default=lambda: datetime.now(timezone.utc).date())
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     is_exceptional = db.Column(db.Boolean, default=False)
+    person = db.Column(db.String(100), default='Non spécifié')  # Who spent the money
+    needs_reimbursement = db.Column(db.Boolean, default=False)  # If expense needs reimbursement
+    notes = db.Column(db.String(500))  # Additional notes/options
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     category = db.relationship('Category', backref=db.backref('expenses', lazy=True))
@@ -164,7 +167,10 @@ def add_expense():
         description=data['description'],
         category_id=int(data['category_id']),
         is_exceptional=data.get('is_exceptional', False),
-        date=datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date()
+        date=datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date(),
+        person=data.get('person', 'Non spécifié'),
+        needs_reimbursement=data.get('needs_reimbursement', False),
+        notes=data.get('notes', '')
     )
     
     db.session.add(expense)
@@ -209,6 +215,51 @@ def add_budget():
     db.session.commit()
     
     return jsonify({'success': True, 'message': 'Budget updated successfully'})
+
+@app.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
+def delete_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Expense deleted successfully'})
+
+@app.route('/api/expenses/<int:expense_id>', methods=['PUT'])
+def update_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    data = request.get_json()
+    
+    expense.amount = float(data['amount'])
+    expense.description = data['description']
+    expense.category_id = int(data['category_id'])
+    expense.is_exceptional = data.get('is_exceptional', False)
+    expense.date = datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date()
+    expense.person = data.get('person', 'Non spécifié')
+    expense.needs_reimbursement = data.get('needs_reimbursement', False)
+    expense.notes = data.get('notes', '')
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Expense updated successfully'})
+
+@app.route('/api/subscriptions/<int:subscription_id>', methods=['DELETE'])
+def delete_subscription(subscription_id):
+    subscription = Subscription.query.get_or_404(subscription_id)
+    db.session.delete(subscription)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Subscription deleted successfully'})
+
+@app.route('/api/subscriptions/<int:subscription_id>', methods=['PUT'])
+def update_subscription(subscription_id):
+    subscription = Subscription.query.get_or_404(subscription_id)
+    data = request.get_json()
+    
+    subscription.name = data['name']
+    subscription.amount = float(data['amount'])
+    subscription.billing_cycle = data['billing_cycle']
+    subscription.category_id = int(data['category_id'])
+    subscription.next_billing = datetime.strptime(data['next_billing'], '%Y-%m-%d').date()
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Subscription updated successfully'})
 
 @app.route('/api/income', methods=['POST'])
 def add_income():
@@ -272,6 +323,8 @@ def chart_categories():
 
 def init_database():
     """Initialize the database with default data"""
+    # Drop all tables and recreate them to ensure schema is up to date
+    db.drop_all()
     db.create_all()
     
     # Add default categories if they don't exist

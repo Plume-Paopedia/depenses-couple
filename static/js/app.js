@@ -127,6 +127,7 @@ class ExpenseApp {
         
         let formData = {};
         let endpoint = '';
+        let method = 'POST';
         let form = null;
         
         switch (activeTabId) {
@@ -139,9 +140,19 @@ class ExpenseApp {
                     description: document.getElementById('expenseDescription').value,
                     category_id: document.getElementById('expenseCategory').value,
                     date: document.getElementById('expenseDate').value,
-                    is_exceptional: document.getElementById('expenseExceptional').checked
+                    is_exceptional: document.getElementById('expenseExceptional').checked,
+                    person: document.getElementById('expensePerson').value,
+                    needs_reimbursement: document.getElementById('expenseReimbursement').checked,
+                    notes: document.getElementById('expenseNotes').value
                 };
-                endpoint = '/api/expenses';
+                
+                // Check if we're editing an existing expense
+                if (window.editingExpenseId) {
+                    endpoint = `/api/expenses/${window.editingExpenseId}`;
+                    method = 'PUT';
+                } else {
+                    endpoint = '/api/expenses';
+                }
                 break;
                 
             case 'income-pane':
@@ -168,7 +179,14 @@ class ExpenseApp {
                     category_id: document.getElementById('subscriptionCategory').value,
                     next_billing: document.getElementById('subscriptionNextBilling').value
                 };
-                endpoint = '/api/subscriptions';
+                
+                // Check if we're editing an existing subscription
+                if (window.editingSubscriptionId) {
+                    endpoint = `/api/subscriptions/${window.editingSubscriptionId}`;
+                    method = 'PUT';
+                } else {
+                    endpoint = '/api/subscriptions';
+                }
                 break;
                 
             default:
@@ -177,7 +195,7 @@ class ExpenseApp {
         
         try {
             const response = await fetch(endpoint, {
-                method: 'POST',
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -291,6 +309,13 @@ class ExpenseApp {
                 });
             }
         });
+        
+        // Clear editing state
+        window.editingExpenseId = null;
+        window.editingSubscriptionId = null;
+        
+        // Reset submit button text
+        document.getElementById('quickAddSubmit').textContent = 'Ajouter';
         
         // Reset dates
         this.setTodayDate();
