@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import calendar
 import json
 
@@ -106,7 +106,8 @@ def dashboard():
                          monthly_subscriptions=monthly_subscriptions,
                          remaining_budget=remaining_budget,
                          recent_expenses=recent_expenses,
-                         upcoming_subs=upcoming_subs)
+                         upcoming_subs=upcoming_subs,
+                         date=date)
 
 @app.route('/expenses')
 def expenses():
@@ -127,7 +128,7 @@ def expenses():
 def subscriptions():
     active_subs = Subscription.query.filter_by(is_active=True).order_by(Subscription.next_billing).all()
     categories = Category.query.all()
-    return render_template('subscriptions.html', subscriptions=active_subs, categories=categories)
+    return render_template('subscriptions.html', subscriptions=active_subs, categories=categories, date=date)
 
 @app.route('/budgets')
 def budgets():
