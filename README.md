@@ -1,6 +1,20 @@
 # 💰 Dépenses Couple - Gestionnaire de Finances Partagées
 
-Une application web Flask moderne et intuitive pour gérer les finances d'un couple. Suivez vos dépenses, abonnements, budgets et revenus avec une interface élégante et des graphiques informatifs.
+Une application web Flask moderne et intuitive pour gérer les finances d'un couple. Suivez vos dépenses, abonnements, budgets et revenus avec une interface élégante, des graphiques informatifs et des fonctionnalités de communication avancées.
+
+## 📚 Documentation Complète
+
+**🎯 Nouveau !** Une wiki complète est maintenant disponible dans le dossier `/docs` :
+
+**[📖 Accès à la Wiki Complète](docs/README.md)**
+
+### 🗂️ Sections Principales
+- **🚀 [Démarrage Rapide](docs/getting-started/quick-start.md)** - Guide de premiers pas détaillé
+- **💬 [Communication & Social](docs/social/)** - Commentaires, négociation, rappels contextuels
+- **💰 [Gestion Financière](docs/features/)** - Dépenses, budgets, abonnements, revenus
+- **📊 [Analyses Avancées](docs/analytics/)** - Graphiques, rapports, statistiques
+- **❓ [Support](docs/support/)** - FAQ, dépannage, contact
+- **📖 [Guides Pratiques](docs/guides/)** - Scénarios d'usage, meilleures pratiques
 
 ## ✨ Fonctionnalités
 
@@ -16,6 +30,9 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Historique complet avec pagination
 - Filtrage par catégorie
 - **Personnalisation des noms** : Possibilité d'entrer des noms personnalisés pour identifier qui a dépensé
+- **Commentaires et notes** : Communication intégrée sur chaque dépense
+- **Négociation des partages** : Système de propositions et contre-propositions
+- **Gestion des remboursements** : Suivi automatique des dettes mutuelles
 
 ### 🔄 Abonnements
 - Suivi des abonnements mensuels et annuels
@@ -23,6 +40,8 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Gestion de l'état actif/inactif
 - Calcul automatique de l'impact sur le budget
 - **Personnalisation des noms** : Possibilité d'entrer des noms personnalisés pour identifier qui paie l'abonnement
+- **Rappels intelligents** : Notifications contextuelles pour les renouvellements
+- **Négociation des partages** : Proposez des arrangements pour les abonnements communs
 
 ### 🎯 Budgets
 - Définition de limites par catégorie
@@ -35,16 +54,19 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Historique des entrées d'argent
 - Calcul automatique du budget disponible
 
-### 📈 Analyses et Graphiques
-- Évolution des dépenses sur 6 mois
-- Répartition par catégorie
-- Graphiques interactifs et colorés
-
 ### 👥 Personnalisation
 - **Noms personnalisés** : Plus besoin de se limiter aux options "Partenaire 1" et "Partenaire 2"
 - **Champs de saisie libres** : Entrez n'importe quel nom pour identifier qui a dépensé ou qui paie un abonnement
 - **Suggestions intégrées** : Liste de suggestions avec options par défaut et possibilité d'ajouter des noms personnalisés
 - **Cohérence** : Les noms personnalisés s'appliquent partout dans l'application (dépenses, abonnements, etc.)
+- **Communication personnalisée** : Adaptez le ton et le style des messages à votre couple
+
+### 📈 Analyses et Graphiques
+- Évolution des dépenses sur 6 mois
+- Répartition par catégorie
+- Graphiques interactifs et colorés
+- Analyses des habitudes de communication
+- Suivi de l'équité financière entre partenaires
 
 ## 🛠️ Technologies Utilisées
 
