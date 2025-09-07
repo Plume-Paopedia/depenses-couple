@@ -223,6 +223,16 @@ def budgets():
     
     return render_template('budgets.html', budget_data=budget_data, categories=categories, today=today)
 
+@app.route('/calendar')
+def calendar_view():
+    from datetime import datetime
+    current_month = datetime.now().strftime('%B')
+    current_year = datetime.now().year
+    
+    return render_template('calendar.html', 
+                         current_month=current_month, 
+                         current_year=current_year)
+
 # API Routes
 @app.route('/api/expenses', methods=['GET'])
 def get_expenses():

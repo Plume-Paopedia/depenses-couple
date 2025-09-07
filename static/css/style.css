@@ -838,4 +838,56 @@ body {
 [data-bs-theme="dark"] .calendar-event:hover {
     background: rgba(102, 126, 234, 0.3);
 }
+
+/* Vacation Mode Styling */
+.vacation-mode {
+    background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+}
+
+.vacation-mode .navbar {
+    background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+}
+
+.vacation-mode .card {
+    border-left: 4px solid #20c997;
+}
+
+.vacation-mode .stats-card {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.vacation-mode .btn-primary {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    border: none;
+}
+
+.vacation-mode .btn-primary:hover {
+    background: linear-gradient(135deg, #138496, #1e7e34);
+}
+
+/* Vacation mode indicator */
+.vacation-mode::before {
+    content: "🏖️ Mode Vacances Activé";
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    background: #20c997;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 1040;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Hide some advanced features in vacation mode */
+.vacation-mode .challenge-card,
+.vacation-mode #badgesContainer,
+.vacation-mode .btn-group .btn:not(:first-child) {
+    display: none !important;
+}
+
+.vacation-mode .quick-actions .col-md-3:nth-child(n+3) {
+    display: none !important;
+}
 }

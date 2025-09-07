@@ -57,9 +57,40 @@
                             <i class="fas fa-piggy-bank me-1"></i>Budgets
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'calendar_view' %}active{% endif %}" href="{{ url_for('calendar_view') }}">
+                            <i class="fas fa-calendar-alt me-1"></i>Calendrier
+                        </a>
+                    </li>
                 </ul>
                 
                 <div class="navbar-nav">
+                    <div class="nav-item dropdown me-2">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="toggleVacationMode()">
+                                    <i class="fas fa-umbrella-beach me-2"></i>
+                                    <span id="vacationModeText">Mode vacances</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="expenseApp.createBackup()">
+                                    <i class="fas fa-download me-2"></i>
+                                    Sauvegarder
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('calendar_view') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Calendrier
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     <button class="btn btn-outline-light btn-sm" id="themeToggle">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
@@ -312,6 +343,42 @@
                 });
             }
         });
+        
+        // Initialize vacation mode state
+        if (localStorage.getItem('vacationMode') === 'true') {
+            document.body.classList.add('vacation-mode');
+            updateVacationModeText(true);
+        }
+    });
+    
+    function toggleVacationMode() {
+        const isVacationMode = localStorage.getItem('vacationMode') === 'true';
+        
+        if (isVacationMode) {
+            localStorage.removeItem('vacationMode');
+            document.body.classList.remove('vacation-mode');
+            updateVacationModeText(false);
+            if (window.expenseApp) {
+                window.expenseApp.showToast('info', 'Mode vacances désactivé');
+            }
+        } else {
+            localStorage.setItem('vacationMode', 'true');
+            document.body.classList.add('vacation-mode');
+            updateVacationModeText(true);
+            if (window.expenseApp) {
+                window.expenseApp.showToast('success', 'Mode vacances activé - Interface simplifiée');
+            }
+        }
+    }
+    
+    function updateVacationModeText(isActive) {
+        const text = document.getElementById('vacationModeText');
+        if (text) {
+            text.innerHTML = isActive ? 
+                '<i class="fas fa-check me-1"></i>Mode vacances (actif)' : 
+                'Mode vacances';
+        }
+    }
     </script>
     
     {% block scripts %}{% endblock %}
