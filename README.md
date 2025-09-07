@@ -15,12 +15,14 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Marquage des dépenses exceptionnelles
 - Historique complet avec pagination
 - Filtrage par catégorie
+- **Personnalisation des noms** : Possibilité d'entrer des noms personnalisés pour identifier qui a dépensé
 
 ### 🔄 Abonnements
 - Suivi des abonnements mensuels et annuels
 - Alertes pour les renouvellements à venir
 - Gestion de l'état actif/inactif
 - Calcul automatique de l'impact sur le budget
+- **Personnalisation des noms** : Possibilité d'entrer des noms personnalisés pour identifier qui paie l'abonnement
 
 ### 🎯 Budgets
 - Définition de limites par catégorie
@@ -37,6 +39,12 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Évolution des dépenses sur 6 mois
 - Répartition par catégorie
 - Graphiques interactifs et colorés
+
+### 👥 Personnalisation
+- **Noms personnalisés** : Plus besoin de se limiter aux options "Partenaire 1" et "Partenaire 2"
+- **Champs de saisie libres** : Entrez n'importe quel nom pour identifier qui a dépensé ou qui paie un abonnement
+- **Suggestions intégrées** : Liste de suggestions avec options par défaut et possibilité d'ajouter des noms personnalisés
+- **Cohérence** : Les noms personnalisés s'appliquent partout dans l'application (dépenses, abonnements, etc.)
 
 ## 🛠️ Technologies Utilisées
 

@@ -177,7 +177,8 @@ class ExpenseApp {
                     amount: document.getElementById('subscriptionAmount').value,
                     billing_cycle: document.getElementById('subscriptionCycle').value,
                     category_id: document.getElementById('subscriptionCategory').value,
-                    next_billing: document.getElementById('subscriptionNextBilling').value
+                    next_billing: document.getElementById('subscriptionNextBilling').value,
+                    person: document.getElementById('subscriptionPerson').value || 'Non spécifié'
                 };
                 
                 // Check if we're editing an existing subscription

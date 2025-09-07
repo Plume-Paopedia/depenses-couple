@@ -40,6 +40,7 @@ class Subscription(db.Model):
     billing_cycle = db.Column(db.String(20), default='monthly')  # monthly, yearly
     next_billing = db.Column(db.Date, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    person = db.Column(db.String(100), default='Non spécifié')  # Who pays for the subscription
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
@@ -155,7 +156,7 @@ def budgets():
             'percentage': (spent / budget.monthly_limit * 100) if budget.monthly_limit > 0 else 0
         })
     
-    return render_template('budgets.html', budget_data=budget_data, categories=categories)
+    return render_template('budgets.html', budget_data=budget_data, categories=categories, today=today)
 
 # API Routes
 @app.route('/api/expenses', methods=['POST'])
@@ -189,7 +190,8 @@ def add_subscription():
         amount=float(data['amount']),
         billing_cycle=data['billing_cycle'],
         category_id=int(data['category_id']),
-        next_billing=next_billing
+        next_billing=next_billing,
+        person=data.get('person', 'Non spécifié')
     )
     
     db.session.add(subscription)
@@ -257,6 +259,7 @@ def update_subscription(subscription_id):
     subscription.billing_cycle = data['billing_cycle']
     subscription.category_id = int(data['category_id'])
     subscription.next_billing = datetime.strptime(data['next_billing'], '%Y-%m-%d').date()
+    subscription.person = data.get('person', 'Non spécifié')
     
     db.session.commit()
     return jsonify({'success': True, 'message': 'Subscription updated successfully'})
