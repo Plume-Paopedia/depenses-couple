@@ -3,9 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta, timezone
 import calendar
 import json
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///expenses.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -295,4 +296,11 @@ def init_database():
 if __name__ == '__main__':
     with app.app_context():
         init_database()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Get port from environment variable (Railway provides this)
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Check if we're in production (Railway sets PORT)
+    is_production = os.environ.get('PORT') is not None
+    
+    app.run(debug=not is_production, host='0.0.0.0', port=port)

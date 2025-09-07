@@ -52,7 +52,7 @@ Une application web Flask moderne et intuitive pour gérer les finances d'un cou
 - Python 3.8+ (testé avec Python 3.12.3)
 - pip (gestionnaire de packages Python)
 
-### Installation
+### Installation Locale
 
 1. **Cloner le repository**
 ```bash
@@ -78,11 +78,47 @@ python app.py
 
 L'application sera accessible à l'adresse : `http://localhost:5000`
 
+### 🚂 Déploiement sur Railway
+
+Railway est une plateforme de déploiement moderne qui permet d'héberger facilement votre application pour y accéder depuis n'importe où.
+
+#### 1. Préparation (déjà faite ✅)
+- `Procfile` configuré pour gunicorn
+- Variables d'environnement gérées
+- Configuration de production automatique
+
+#### 2. Déploiement
+1. **Créer un compte sur [Railway](https://railway.app)**
+2. **Connecter votre repository GitHub**
+3. **Déployer directement depuis GitHub :**
+   - Cliquez sur "New Project"
+   - Sélectionnez "Deploy from GitHub repo"
+   - Choisissez ce repository
+   - Railway détectera automatiquement la configuration Python
+
+#### 3. Configuration des variables d'environnement (Optionnel)
+Dans Railway, vous pouvez ajouter :
+- `SECRET_KEY` : Une clé secrète sécurisée pour la production
+
+#### 4. Accès à l'application
+- Railway fournira une URL publique (ex: `votre-app.railway.app`)
+- L'application sera accessible 24h/24 depuis n'importe où
+- Partage facile avec votre partenaire !
+
+#### 💡 Avantages Railway
+- Déploiement gratuit (avec limitations)
+- HTTPS automatique
+- Redémarrage automatique
+- Base de données persistante
+- Surveillance intégrée
+
 ### Configuration
 
 - La base de données SQLite est créée automatiquement au premier lancement
 - Des catégories par défaut sont ajoutées automatiquement
-- Pour la production, modifiez la `SECRET_KEY` dans `app.py`
+- **Mode développement** : `SECRET_KEY` par défaut (local uniquement)
+- **Mode production** : Railway configure automatiquement les variables d'environnement
+- L'application détecte automatiquement l'environnement (développement vs production)
 
 ## 📱 Utilisation
 
