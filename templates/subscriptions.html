@@ -92,7 +92,7 @@
                                         <ul class="dropdown-menu">
                                             <li>
                                                 <a class="dropdown-item" href="#"
-                                                   onclick="editSubscription({{ subscription.id }}, '{{ subscription.name }}', {{ subscription.amount }}, '{{ subscription.billing_cycle }}', {{ subscription.category_id }}, '{{ subscription.next_billing }}')">
+                                                   onclick="editSubscription({{ subscription.id }}, '{{ subscription.name }}', {{ subscription.amount }}, '{{ subscription.billing_cycle }}', {{ subscription.category_id }}, '{{ subscription.next_billing }}', '{{ subscription.person or 'Non spécifié' }}')">
                                                     <i class="fas fa-edit me-2"></i>Modifier
                                                 </a>
                                             </li>
@@ -123,6 +123,11 @@
                                         <span class="badge {% if subscription.billing_cycle == 'monthly' %}bg-success{% else %}bg-primary{% endif %}">
                                             {{ 'Mensuel' if subscription.billing_cycle == 'monthly' else 'Annuel' }}
                                         </span>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Payé par</span>
+                                        <span class="badge bg-info">{{ subscription.person or 'Non spécifié' }}</span>
                                     </div>
                                     
                                     <div class="d-flex justify-content-between align-items-center">
@@ -303,13 +308,14 @@
         }
     }
 
-    function editSubscription(id, name, amount, billingCycle, categoryId, nextBilling) {
+    function editSubscription(id, name, amount, billingCycle, categoryId, nextBilling, person) {
         // Fill the quick add modal with current values
         document.getElementById('subscriptionName').value = name;
         document.getElementById('subscriptionAmount').value = amount;
         document.getElementById('subscriptionCycle').value = billingCycle;
         document.getElementById('subscriptionCategory').value = categoryId;
         document.getElementById('subscriptionNextBilling').value = nextBilling;
+        document.getElementById('subscriptionPerson').value = person || 'Non spécifié';
         
         // Store the subscription ID for updating
         window.editingSubscriptionId = id;

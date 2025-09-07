@@ -126,12 +126,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="expensePerson" class="form-label">Personne qui a dépensé</label>
-                                    <select class="form-select" id="expensePerson">
-                                        <option value="Non spécifié">Non spécifié</option>
-                                        <option value="Partenaire 1">Partenaire 1</option>
-                                        <option value="Partenaire 2">Partenaire 2</option>
-                                        <option value="Les deux">Les deux</option>
-                                    </select>
+                                    <input type="text" class="form-control" id="expensePerson" 
+                                           list="expensePersonOptions" placeholder="Entrez un nom ou choisissez dans la liste">
+                                    <datalist id="expensePersonOptions">
+                                        <option value="Non spécifié">
+                                        <option value="Partenaire 1">
+                                        <option value="Partenaire 2">
+                                        <option value="Les deux">
+                                    </datalist>
                                 </div>
                                 <div class="mb-3">
                                     <label for="expenseNotes" class="form-label">Notes (optionnel)</label>
@@ -204,6 +206,17 @@
                                 <div class="mb-3">
                                     <label for="subscriptionNextBilling" class="form-label">Prochaine facturation</label>
                                     <input type="date" class="form-control" id="subscriptionNextBilling" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subscriptionPerson" class="form-label">Personne qui paie</label>
+                                    <input type="text" class="form-control" id="subscriptionPerson" 
+                                           list="subscriptionPersonOptions" placeholder="Entrez un nom ou choisissez dans la liste">
+                                    <datalist id="subscriptionPersonOptions">
+                                        <option value="Non spécifié">
+                                        <option value="Partenaire 1">
+                                        <option value="Partenaire 2">
+                                        <option value="Les deux">
+                                    </datalist>
                                 </div>
                             </form>
                         </div>

@@ -178,8 +178,8 @@
                                 
                                 <!-- Daily spending recommendation -->
                                 {% set days_in_month = 30 %}
-                                {% set today = moment().day %}
-                                {% set days_remaining = days_in_month - today %}
+                                {% set today_day = today.day %}
+                                {% set days_remaining = days_in_month - today_day %}
                                 {% set remaining_budget = budget.monthly_limit - spent %}
                                 {% set daily_budget = (remaining_budget / days_remaining) if days_remaining > 0 else 0 %}
                                 
