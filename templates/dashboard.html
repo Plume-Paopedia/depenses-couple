@@ -185,15 +185,88 @@
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="row">
+<!-- Challenges Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>
+                    Défis du mois
+                </h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="createNewChallenge()">
+                    <i class="fas fa-plus me-1"></i>
+                    Nouveau défi
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row" id="challengesContainer">
+                    <!-- Challenges will be loaded here -->
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Chargement des défis...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badges Section -->
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
+                    <i class="fas fa-medal me-2"></i>
+                    Badges et récompenses
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="badgesContainer">
+                    <!-- Badges will be loaded here -->
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Chargement des badges...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="row mb-4" id="installBanner" style="display: none;">
+    <div class="col-12">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-mobile-alt me-2"></i>
+            <strong>Installer l'application !</strong> 
+            Ajoutez Dépenses Couple à votre écran d'accueil pour un accès rapide et des notifications.
+            <button type="button" class="btn btn-sm btn-primary ms-2" id="installApp" style="display: none;">
+                Installer
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
                     <i class="fas fa-bolt me-2"></i>
                     Actions rapides
                 </h5>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-info" onclick="expenseApp.createBackup()" title="Sauvegarder les données">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="toggleVacationMode()" title="Mode vacances">
+                        <i class="fas fa-umbrella-beach"></i>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="row text-center">
@@ -245,6 +318,44 @@
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+        
+        // Show install banner after a delay
+        setTimeout(() => {
+            const installBanner = document.getElementById('installBanner');
+            if (installBanner && !localStorage.getItem('installBannerDismissed')) {
+                installBanner.style.display = 'block';
+            }
+        }, 3000);
+    });
+    
+    function createNewChallenge() {
+        // Simple challenge creation - in real app would be a modal
+        const challengeData = {
+            name: 'Défi Économie',
+            description: 'Réduire les dépenses de divertissement de 20%',
+            category_id: 4, // Divertissement
+            target_amount: 150,
+            target_type: 'reduce'
+        };
+        
+        if (window.expenseApp) {
+            window.expenseApp.createChallenge(challengeData);
+        }
+    }
+    
+    function toggleVacationMode() {
+        const isVacationMode = localStorage.getItem('vacationMode') === 'true';
+        
+        if (isVacationMode) {
+            localStorage.removeItem('vacationMode');
+            document.body.classList.remove('vacation-mode');
+            window.expenseApp.showToast('info', 'Mode vacances désactivé');
+        } else {
+            localStorage.setItem('vacationMode', 'true');
+            document.body.classList.add('vacation-mode');
+            window.expenseApp.showToast('success', 'Mode vacances activé - Interface simplifiée');
+        }
+    }
     });
 </script>
 {% endblock %}
