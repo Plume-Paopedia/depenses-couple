@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-pie me-2"></i>
+            Tableau de bord
+            <small class="text-muted">Vue d'ensemble de vos finances</small>
+        </h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card income">
+            <i class="fas fa-money-bill-wave fa-2x mb-2 text-success"></i>
+            <div class="stats-value">{{ "%.2f"|format(monthly_income) }}€</div>
+            <div class="stats-label">Revenus du mois</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card expense">
+            <i class="fas fa-receipt fa-2x mb-2 text-danger"></i>
+            <div class="stats-value">{{ "%.2f"|format(monthly_expenses) }}€</div>
+            <div class="stats-label">Dépenses du mois</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-sync-alt fa-2x mb-2 text-info"></i>
+            <div class="stats-value">{{ "%.2f"|format(monthly_subscriptions) }}€</div>
+            <div class="stats-label">Abonnements mensuels</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card remaining {% if remaining_budget >= 0 %}income{% else %}expense{% endif %}">
+            <i class="fas fa-piggy-bank fa-2x mb-2 {% if remaining_budget >= 0 %}text-success{% else %}text-danger{% endif %}"></i>
+            <div class="stats-value">{{ "%.2f"|format(remaining_budget) }}€</div>
+            <div class="stats-label">Reste à vivre</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Évolution des dépenses
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="expensesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Répartition par catégorie
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity and Upcoming -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Dépenses récentes
+                </h5>
+                <a href="{{ url_for('expenses') }}" class="btn btn-sm btn-outline-primary">
+                    Voir tout
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    {% for expense in recent_expenses %}
+                    <div class="expense-item {% if expense.is_exceptional %}exceptional{% endif %}">
+                        <div class="category-icon" style="background: {{ expense.category.color }};">
+                            <i class="{{ expense.category.icon }}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ expense.description }}</h6>
+                                    <small class="text-muted">
+                                        {{ expense.category.name }} • 
+                                        {{ expense.date.strftime('%d/%m/%Y') }}
+                                        {% if expense.is_exceptional %}
+                                        <span class="badge bg-warning ms-1">Exceptionnel</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <span class="fw-bold text-danger">-{{ "%.2f"|format(expense.amount) }}€</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune dépense récente</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#quickAddModal">
+                            <i class="fas fa-plus me-1"></i>
+                            Ajouter une dépense
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Abonnements à renouveler
+                </h5>
+                <a href="{{ url_for('subscriptions') }}" class="btn btn-sm btn-outline-primary">
+                    Gérer
+                </a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_subs %}
+                    {% for subscription in upcoming_subs %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border-start border-4 {% if subscription.billing_cycle == 'monthly' %}border-success{% else %}border-primary{% endif %} bg-light rounded">
+                        <div>
+                            <h6 class="mb-1">{{ subscription.name }}</h6>
+                            <small class="text-muted">
+                                {{ subscription.category.name }} • 
+                                {{ subscription.next_billing.strftime('%d/%m/%Y') }}
+                                <span class="badge {% if subscription.billing_cycle == 'monthly' %}bg-success{% else %}bg-primary{% endif %} ms-1">
+                                    {{ 'Mensuel' if subscription.billing_cycle == 'monthly' else 'Annuel' }}
+                                </span>
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold">{{ "%.2f"|format(subscription.amount) }}€</span>
+                            {% if subscription.next_billing <= date(2024, 1, 1) %}
+                            <br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> En retard</small>
+                            {% elif (subscription.next_billing - date.today()).days <= 3 %}
+                            <br><small class="text-warning"><i class="fas fa-clock"></i> Bientôt</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-sync-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun abonnement à renouveler prochainement</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#quickAddModal" 
+                                onclick="document.querySelector('#subscription-tab').click()">
+                            <i class="fas fa-plus me-1"></i>
+                            Ajouter un abonnement
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Actions rapides
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-3">
+                        <button class="btn btn-outline-primary w-100 py-3" data-bs-toggle="modal" data-bs-target="#quickAddModal">
+                            <i class="fas fa-receipt fa-2x mb-2"></i>
+                            <br>Nouvelle dépense
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <button class="btn btn-outline-success w-100 py-3" data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                                onclick="document.querySelector('#income-tab').click()">
+                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                            <br>Nouveau revenu
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <button class="btn btn-outline-info w-100 py-3" data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                                onclick="document.querySelector('#subscription-tab').click()">
+                            <i class="fas fa-sync-alt fa-2x mb-2"></i>
+                            <br>Nouvel abonnement
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <a href="{{ url_for('budgets') }}" class="btn btn-outline-warning w-100 py-3">
+                            <i class="fas fa-piggy-bank fa-2x mb-2"></i>
+                            <br>Gérer budgets
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add custom dashboard scripts if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add pulse animation to remaining budget if negative
+        const remainingBudget = {{ remaining_budget }};
+        if (remainingBudget < 0) {
+            document.querySelector('.stats-card.remaining').classList.add('pulse');
+        }
+        
+        // Add warning tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

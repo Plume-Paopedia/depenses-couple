@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Abonnements - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="fas fa-sync-alt me-2"></i>
+                Gestion des abonnements
+            </h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                    onclick="document.querySelector('#subscription-tab').click()">
+                <i class="fas fa-plus me-1"></i>
+                Nouvel abonnement
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-calendar-month fa-2x mb-2 text-success"></i>
+            <div class="stats-value text-success">
+                {{ "%.2f"|format(subscriptions | selectattr('billing_cycle', 'equalto', 'monthly') | sum(attribute='amount')) }}€
+            </div>
+            <div class="stats-label">Abonnements mensuels</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-calendar-year fa-2x mb-2 text-primary"></i>
+            <div class="stats-value text-primary">
+                {{ "%.2f"|format(subscriptions | selectattr('billing_cycle', 'equalto', 'yearly') | sum(attribute='amount')) }}€
+            </div>
+            <div class="stats-label">Abonnements annuels</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-12 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-calculator fa-2x mb-2 text-info"></i>
+            <div class="stats-value text-info">
+                {% set monthly_total = subscriptions | selectattr('billing_cycle', 'equalto', 'monthly') | sum(attribute='amount') %}
+                {% set yearly_total = subscriptions | selectattr('billing_cycle', 'equalto', 'yearly') | sum(attribute='amount') %}
+                {{ "%.2f"|format(monthly_total + (yearly_total / 12)) }}€
+            </div>
+            <div class="stats-label">Coût mensuel total</div>
+        </div>
+    </div>
+</div>
+
+<!-- Subscriptions List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Abonnements actifs
+                </h5>
+                <div class="text-muted">
+                    {{ subscriptions | length }} abonnement{{ 's' if subscriptions | length > 1 else '' }}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if subscriptions %}
+                <div class="row">
+                    {% for subscription in subscriptions %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card subscription-card {{ subscription.billing_cycle }} h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon me-3" style="background: {{ subscription.category.color }};">
+                                            <i class="{{ subscription.category.icon }}"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="card-title mb-1">{{ subscription.name }}</h6>
+                                            <small class="text-muted">{{ subscription.category.name }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                                data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#">
+                                                    <i class="fas fa-edit me-2"></i>Modifier
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-warning" href="#">
+                                                    <i class="fas fa-pause me-2"></i>Suspendre
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#">
+                                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Montant</span>
+                                        <span class="fw-bold fs-5">{{ "%.2f"|format(subscription.amount) }}€</span>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Cycle</span>
+                                        <span class="badge {% if subscription.billing_cycle == 'monthly' %}bg-success{% else %}bg-primary{% endif %}">
+                                            {{ 'Mensuel' if subscription.billing_cycle == 'monthly' else 'Annuel' }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Prochaine facturation</span>
+                                        <span class="fw-medium 
+                                            {% if subscription.next_billing <= date.today() %}text-danger
+                                            {% elif (subscription.next_billing - date.today()).days <= 3 %}text-warning
+                                            {% else %}text-success{% endif %}">
+                                            {{ subscription.next_billing.strftime('%d/%m/%Y') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress bar for time until next billing -->
+                                {% set days_until = (subscription.next_billing - date.today()).days %}
+                                {% set cycle_days = 30 if subscription.billing_cycle == 'monthly' else 365 %}
+                                {% set progress = ((cycle_days - days_until) / cycle_days * 100) if days_until >= 0 else 100 %}
+                                
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between text-muted small mb-1">
+                                        <span>Progression du cycle</span>
+                                        <span>
+                                            {% if days_until > 0 %}
+                                                {{ days_until }} jour{{ 's' if days_until > 1 else '' }} restant{{ 's' if days_until > 1 else '' }}
+                                            {% elif days_until == 0 %}
+                                                Aujourd'hui !
+                                            {% else %}
+                                                En retard de {{ -days_until }} jour{{ 's' if -days_until > 1 else '' }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar 
+                                            {% if days_until < 0 %}bg-danger
+                                            {% elif days_until <= 3 %}bg-warning
+                                            {% else %}bg-success{% endif %}" 
+                                             style="width: {{ progress if progress <= 100 else 100 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if subscription.billing_cycle == 'yearly' %}
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calculator me-1"></i>
+                                        {{ "%.2f"|format(subscription.amount / 12) }}€/mois
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-sync-alt fa-4x text-muted mb-4"></i>
+                    <h4>Aucun abonnement configuré</h4>
+                    <p class="text-muted mb-4">
+                        Ajoutez vos abonnements (Netflix, Spotify, etc.) pour suivre vos dépenses récurrentes.
+                    </p>
+                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                            onclick="document.querySelector('#subscription-tab').click()">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter un abonnement
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popular Subscriptions -->
+{% if not subscriptions %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Abonnements populaires
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fab fa-netflix fa-2x text-danger mb-2"></i>
+                            <h6>Netflix</h6>
+                            <small class="text-muted">~15.99€/mois</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fab fa-spotify fa-2x text-success mb-2"></i>
+                            <h6>Spotify</h6>
+                            <small class="text-muted">~9.99€/mois</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fab fa-amazon fa-2x text-warning mb-2"></i>
+                            <h6>Amazon Prime</h6>
+                            <small class="text-muted">~6.99€/mois</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fab fa-apple fa-2x text-dark mb-2"></i>
+                            <h6>Apple Music</h6>
+                            <small class="text-muted">~10.99€/mois</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Calendar View (Future Enhancement) -->
+{% if subscriptions %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Prochaines facturations
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for subscription in subscriptions | sort(attribute='next_billing') %}
+                    {% if loop.index <= 6 %}
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="d-flex align-items-center p-3 border-start border-4 
+                            {% if subscription.next_billing <= date.today() %}border-danger bg-danger
+                            {% elif (subscription.next_billing - date.today()).days <= 3 %}border-warning bg-warning
+                            {% else %}border-success bg-success{% endif %} bg-opacity-10 rounded">
+                            <div class="category-icon me-3" style="background: {{ subscription.category.color }};">
+                                <i class="{{ subscription.category.icon }}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ subscription.name }}</h6>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">{{ subscription.next_billing.strftime('%d/%m/%Y') }}</small>
+                                    <small class="fw-bold">{{ "%.2f"|format(subscription.amount) }}€</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate subscription cards on page load
+        document.querySelectorAll('.subscription-card').forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.5s ease';
+                
+                requestAnimationFrame(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                });
+            }, index * 150);
+        });
+        
+        // Add hover effects to subscription cards
+        document.querySelectorAll('.subscription-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Update progress bars with animation
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                bar.style.transition = 'width 1s ease';
+                
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 500);
+    });
+</script>
+{% endblock %}

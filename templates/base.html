@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dépenses Couple{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-heart me-2"></i>
+                Dépenses Couple
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-chart-pie me-1"></i>Tableau de bord
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'expenses' %}active{% endif %}" href="{{ url_for('expenses') }}">
+                            <i class="fas fa-receipt me-1"></i>Dépenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'subscriptions' %}active{% endif %}" href="{{ url_for('subscriptions') }}">
+                            <i class="fas fa-sync-alt me-1"></i>Abonnements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'budgets' %}active{% endif %}" href="{{ url_for('budgets') }}">
+                            <i class="fas fa-piggy-bank me-1"></i>Budgets
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="navbar-nav">
+                    <button class="btn btn-outline-light btn-sm" id="themeToggle">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Quick Add FAB -->
+    <div class="fab-container">
+        <button class="btn btn-primary fab" data-bs-toggle="modal" data-bs-target="#quickAddModal">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- Quick Add Modal -->
+    <div class="modal fade" id="quickAddModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajout rapide</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="expense-tab" data-bs-toggle="tab" data-bs-target="#expense-pane">
+                                <i class="fas fa-receipt me-1"></i>Dépense
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="income-tab" data-bs-toggle="tab" data-bs-target="#income-pane">
+                                <i class="fas fa-money-bill-wave me-1"></i>Revenu
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="subscription-tab" data-bs-toggle="tab" data-bs-target="#subscription-pane">
+                                <i class="fas fa-sync-alt me-1"></i>Abonnement
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3">
+                        <!-- Expense Tab -->
+                        <div class="tab-pane fade show active" id="expense-pane">
+                            <form id="expenseForm">
+                                <div class="mb-3">
+                                    <label for="expenseAmount" class="form-label">Montant (€)</label>
+                                    <input type="number" class="form-control" id="expenseAmount" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expenseDescription" class="form-label">Description</label>
+                                    <input type="text" class="form-control" id="expenseDescription" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expenseCategory" class="form-label">Catégorie</label>
+                                    <select class="form-select" id="expenseCategory" required>
+                                        <option value="">Choisir une catégorie</option>
+                                        <!-- Will be populated by JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expenseDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="expenseDate" required>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="expenseExceptional">
+                                    <label class="form-check-label" for="expenseExceptional">
+                                        Dépense exceptionnelle
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Income Tab -->
+                        <div class="tab-pane fade" id="income-pane">
+                            <form id="incomeForm">
+                                <div class="mb-3">
+                                    <label for="incomeAmount" class="form-label">Montant (€)</label>
+                                    <input type="number" class="form-control" id="incomeAmount" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="incomeDescription" class="form-label">Description</label>
+                                    <input type="text" class="form-control" id="incomeDescription" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="incomeDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="incomeDate" required>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="incomeRecurring">
+                                    <label class="form-check-label" for="incomeRecurring">
+                                        Revenu récurrent
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Subscription Tab -->
+                        <div class="tab-pane fade" id="subscription-pane">
+                            <form id="subscriptionForm">
+                                <div class="mb-3">
+                                    <label for="subscriptionName" class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="subscriptionName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subscriptionAmount" class="form-label">Montant (€)</label>
+                                    <input type="number" class="form-control" id="subscriptionAmount" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subscriptionCycle" class="form-label">Cycle de facturation</label>
+                                    <select class="form-select" id="subscriptionCycle" required>
+                                        <option value="monthly">Mensuel</option>
+                                        <option value="yearly">Annuel</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subscriptionCategory" class="form-label">Catégorie</label>
+                                    <select class="form-select" id="subscriptionCategory" required>
+                                        <option value="">Choisir une catégorie</option>
+                                        <!-- Will be populated by JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subscriptionNextBilling" class="form-label">Prochaine facturation</label>
+                                    <input type="date" class="form-control" id="subscriptionNextBilling" required>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="quickAddSubmit">Ajouter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                <strong class="me-auto">Succès</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                Opération réussie !
+            </div>
+        </div>
+        
+        <div id="errorToast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                <strong class="me-auto">Erreur</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                Une erreur s'est produite.
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
