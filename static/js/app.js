@@ -1,8 +1,73 @@
 // Application JavaScript
 
+class NotificationManager {
+    constructor() {
+        this.permission = null;
+        this.checkPermission();
+    }
+    
+    async checkPermission() {
+        if ('Notification' in window) {
+            this.permission = await Notification.requestPermission();
+        }
+    }
+    
+    showNotification(title, options = {}) {
+        if (this.permission === 'granted') {
+            const notification = new Notification(title, {
+                icon: '/static/icons/icon-192x192.png',
+                badge: '/static/icons/icon-72x72.png',
+                ...options
+            });
+            
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+            
+            // Auto close after 5 seconds
+            setTimeout(() => notification.close(), 5000);
+        }
+    }
+    
+    notifyExpenseAdded(expense) {
+        this.showNotification(
+            'Nouvelle dépense ajoutée',
+            {
+                body: `${expense.person} a ajouté : ${expense.description} (${expense.amount}€)`,
+                tag: 'expense-added'
+            }
+        );
+    }
+    
+    notifyBudgetAlert(alert) {
+        this.showNotification(
+            'Alerte Budget',
+            {
+                body: alert.message,
+                tag: 'budget-alert',
+                urgency: alert.level === 'danger' ? 'high' : 'normal'
+            }
+        );
+    }
+    
+    notifyValidationRequired(expense) {
+        this.showNotification(
+            'Validation requise',
+            {
+                body: `Dépense de ${expense.amount}€ en attente de validation`,
+                tag: 'validation-required'
+            }
+        );
+    }
+}
+
 class ExpenseApp {
     constructor() {
         this.categories = [];
+        this.notificationManager = new NotificationManager();
+        this.challenges = [];
+        this.badges = [];
         this.init();
     }
 
@@ -12,6 +77,113 @@ class ExpenseApp {
         this.setupThemeToggle();
         this.setTodayDate();
         this.setupToasts();
+        this.loadChallenges();
+        this.loadBadges();
+        this.setupOfflineSupport();
+    }
+    
+    setupOfflineSupport() {
+        // Check if we're online
+        window.addEventListener('online', () => {
+            this.showToast('success', 'Connexion rétablie. Synchronisation en cours...');
+            this.syncPendingData();
+        });
+        
+        window.addEventListener('offline', () => {
+            this.showToast('warning', 'Mode hors ligne activé');
+        });
+    }
+    
+    async syncPendingData() {
+        // This would sync any pending data stored locally
+        console.log('Syncing pending data...');
+    }
+    
+    async loadChallenges() {
+        try {
+            const response = await fetch('/api/challenges');
+            const data = await response.json();
+            this.challenges = data.challenges;
+            this.displayChallenges();
+        } catch (error) {
+            console.error('Error loading challenges:', error);
+        }
+    }
+    
+    displayChallenges() {
+        const container = document.getElementById('challengesContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        this.challenges.forEach(challenge => {
+            const challengeCard = this.createChallengeCard(challenge);
+            container.appendChild(challengeCard);
+        });
+    }
+    
+    createChallengeCard(challenge) {
+        const card = document.createElement('div');
+        card.className = 'col-md-4';
+        
+        const progressColor = challenge.progress <= 50 ? 'success' : 
+                             challenge.progress <= 80 ? 'warning' : 'danger';
+        
+        card.innerHTML = `
+            <div class="card challenge-card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">${challenge.name}</h6>
+                    <p class="card-text small">${challenge.description}</p>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-${progressColor}" role="progressbar" 
+                             style="width: ${Math.min(challenge.progress, 100)}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small>${challenge.current_spent.toFixed(2)}€</small>
+                        <small>${challenge.target_amount.toFixed(2)}€</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    async loadBadges() {
+        try {
+            const response = await fetch('/api/badges');
+            const data = await response.json();
+            this.badges = data.badges;
+            this.displayBadges();
+        } catch (error) {
+            console.error('Error loading badges:', error);
+        }
+    }
+    
+    displayBadges() {
+        const container = document.getElementById('badgesContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        this.badges.forEach(badge => {
+            const badgeElement = this.createBadgeElement(badge);
+            container.appendChild(badgeElement);
+        });
+    }
+    
+    createBadgeElement(badge) {
+        const element = document.createElement('div');
+        element.className = 'col-auto';
+        
+        element.innerHTML = `
+            <div class="badge-item text-center p-2" title="${badge.description}">
+                <i class="${badge.icon} fa-2x text-warning mb-1"></i>
+                <div class="small">${badge.name}</div>
+            </div>
+        `;
+        
+        return element;
     }
 
     async loadCategories() {
@@ -207,6 +379,35 @@ class ExpenseApp {
             
             if (result.success) {
                 this.showToast('success', result.message);
+                
+                // Handle expense-specific features
+                if (activeTabId === 'expense-pane') {
+                    // Show notification for new expense
+                    this.notificationManager.notifyExpenseAdded({
+                        person: formData.person,
+                        description: formData.description,
+                        amount: formData.amount
+                    });
+                    
+                    // Show budget alert if present
+                    if (result.budget_alert) {
+                        this.notificationManager.notifyBudgetAlert(result.budget_alert);
+                        this.showToast(result.budget_alert.level === 'danger' ? 'error' : 'warning', 
+                                     result.budget_alert.message);
+                    }
+                    
+                    // Show validation notification if needed
+                    if (result.requires_validation) {
+                        this.notificationManager.notifyValidationRequired({
+                            amount: formData.amount
+                        });
+                        this.showToast('info', 'Cette dépense nécessite une validation');
+                    }
+                    
+                    // Check for badge achievements
+                    this.checkBadgeAchievements();
+                }
+                
                 this.closeModal();
                 // Refresh the page to show updated data
                 setTimeout(() => {
@@ -333,6 +534,117 @@ class ExpenseApp {
     // Utility function to format date
     formatDate(dateString) {
         return new Intl.DateTimeFormat('fr-FR').format(new Date(dateString));
+    }
+    
+    async checkBadgeAchievements() {
+        try {
+            const response = await fetch('/api/badges?user_name=' + encodeURIComponent('current_user'));
+            const data = await response.json();
+            
+            // Check if user earned new badges (simplified check)
+            if (data.badges && data.badges.length > this.badges.length) {
+                const newBadges = data.badges.slice(this.badges.length);
+                newBadges.forEach(badge => {
+                    this.showBadgeEarned(badge);
+                });
+                this.badges = data.badges;
+            }
+        } catch (error) {
+            console.error('Error checking badge achievements:', error);
+        }
+    }
+    
+    showBadgeEarned(badge) {
+        const toast = document.createElement('div');
+        toast.className = 'toast badge-toast';
+        toast.innerHTML = `
+            <div class="toast-header bg-warning text-dark">
+                <i class="${badge.icon} me-2"></i>
+                <strong class="me-auto">Badge Gagné !</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                <strong>${badge.name}</strong><br>
+                ${badge.description}
+            </div>
+        `;
+        
+        document.querySelector('.toast-container').appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove from DOM after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+    
+    async createChallenge(challengeData) {
+        try {
+            const response = await fetch('/api/challenges', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(challengeData)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.showToast('success', 'Défi créé avec succès !');
+                this.loadChallenges();
+            } else {
+                this.showToast('error', result.message);
+            }
+        } catch (error) {
+            console.error('Error creating challenge:', error);
+            this.showToast('error', 'Erreur lors de la création du défi');
+        }
+    }
+    
+    async generateQRCode(expenseId) {
+        try {
+            const response = await fetch(`/api/qr-share/${expenseId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show QR code in modal (would need QR library in real implementation)
+                this.showQRModal(data.qr_text);
+            }
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+        }
+    }
+    
+    showQRModal(qrText) {
+        // This would show a modal with QR code
+        // For now, just copy to clipboard
+        navigator.clipboard.writeText(qrText).then(() => {
+            this.showToast('success', 'Données copiées dans le presse-papier');
+        });
+    }
+    
+    async createBackup() {
+        try {
+            const response = await fetch('/api/backup', { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.success) {
+                // Download backup as JSON file
+                const blob = new Blob([JSON.stringify(data.backup_data, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `depenses-couple-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showToast('success', 'Sauvegarde créée avec succès !');
+            }
+        } catch (error) {
+            console.error('Error creating backup:', error);
+            this.showToast('error', 'Erreur lors de la création de la sauvegarde');
+        }
     }
 }
 

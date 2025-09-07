@@ -147,6 +147,11 @@
                                                 onclick="editExpense({{ expense.id }}, '{{ expense.description }}', {{ expense.amount }}, {{ expense.category_id }}, '{{ expense.date }}', {{ expense.is_exceptional|lower }}, '{{ expense.person }}', {{ expense.needs_reimbursement|lower }}, '{{ expense.notes|replace("'", "\\'") }}')">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="tooltip" title="Partager via QR"
+                                                onclick="shareExpenseQR({{ expense.id }})">
+                                            <i class="fas fa-qrcode"></i>
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
                                                 data-bs-toggle="tooltip" title="Supprimer"
                                                 onclick="deleteExpense({{ expense.id }})">
@@ -340,6 +345,88 @@
         // Show the modal
         const modal = new bootstrap.Modal(document.getElementById('quickAddModal'));
         modal.show();
+    }
+    
+    async function shareExpenseQR(expenseId) {
+        try {
+            const response = await fetch(`/api/qr-share/${expenseId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Create a simple modal to show QR data
+                showQRModal(data.share_data, data.qr_text);
+            } else {
+                if (window.expenseApp) {
+                    window.expenseApp.showToast('error', 'Erreur lors de la génération du QR code');
+                }
+            }
+        } catch (error) {
+            console.error('Error sharing expense:', error);
+            if (window.expenseApp) {
+                window.expenseApp.showToast('error', 'Erreur de connexion');
+            }
+        }
+    }
+    
+    function showQRModal(shareData, qrText) {
+        // For demonstration, we'll show the data in an alert
+        // In a real implementation, we'd use a QR code library
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-qrcode me-2"></i>
+                            Partager la dépense
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <div class="qr-placeholder mb-3">
+                                <i class="fas fa-qrcode fa-5x text-primary"></i>
+                                <p class="mt-2">QR Code</p>
+                                <small class="text-muted">Dans une vraie implémentation, il y aurait un QR code ici</small>
+                            </div>
+                            <h6>Données partagées :</h6>
+                            <div class="bg-light p-3 rounded">
+                                <strong>${shareData.description}</strong><br>
+                                <span class="text-success">${shareData.amount}€</span><br>
+                                <small class="text-muted">Par ${shareData.person}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="copyToClipboard('${qrText.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-copy me-1"></i>
+                            Copier les données
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Remove modal from DOM when hidden
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+    }
+    
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (window.expenseApp) {
+                window.expenseApp.showToast('success', 'Données copiées dans le presse-papier');
+            }
+        }).catch(err => {
+            console.error('Error copying to clipboard:', err);
+        });
     }
 </script>
 {% endblock %}

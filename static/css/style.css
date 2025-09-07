@@ -561,3 +561,333 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6b4b9a 100%);
 }
+
+/* PWA and Mobile Enhancements */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Enhanced Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.fade-in-up {
+    animation: slideInUp 0.6s ease-out forwards;
+}
+
+.fade-in-scale {
+    animation: fadeInScale 0.4s ease-out forwards;
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+/* Challenge Cards */
+.challenge-card {
+    border-left: 4px solid var(--primary-color);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.challenge-card:hover::before {
+    transform: translateX(100%);
+}
+
+.challenge-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Badge System */
+.badge-item {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.badge-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.badge-toast {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    border: none;
+    color: white;
+}
+
+/* Validation Status */
+.validation-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.validation-pending {
+    background: var(--warning-gradient);
+}
+
+.validation-approved {
+    background: var(--success-gradient);
+}
+
+.validation-rejected {
+    background: var(--secondary-gradient);
+}
+
+/* Budget Alert Animations */
+.budget-alert {
+    position: relative;
+    overflow: hidden;
+}
+
+.budget-alert.danger {
+    background: linear-gradient(45deg, #dc3545, #ff6b6b);
+    animation: pulse 2s infinite;
+}
+
+.budget-alert.warning {
+    background: linear-gradient(45deg, #ffc107, #ffeb3b);
+}
+
+/* Calendar Integration */
+.calendar-event {
+    border-left: 4px solid var(--primary-color);
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    background: rgba(102, 126, 234, 0.1);
+    transition: var(--transition);
+}
+
+.calendar-event:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateX(5px);
+}
+
+.vacation-mode {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+}
+
+/* Notification Styles */
+.notification-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background: #dc3545;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+/* Offline Indicator */
+.offline-banner {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: #ffc107;
+    color: #000;
+    text-align: center;
+    padding: 0.5rem;
+    z-index: 1040;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.offline-banner.show {
+    transform: translateY(0);
+}
+
+/* Enhanced Form Styles */
+.form-floating > .form-control:focus ~ label {
+    color: var(--primary-color);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Micro-interactions */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Advanced responsive grid */
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+/* Enhanced dark mode */
+[data-bs-theme="dark"] .challenge-card {
+    border-left-color: #667eea;
+}
+
+[data-bs-theme="dark"] .calendar-event {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+[data-bs-theme="dark"] .calendar-event:hover {
+    background: rgba(102, 126, 234, 0.3);
+}
+
+/* Vacation Mode Styling */
+.vacation-mode {
+    background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+}
+
+.vacation-mode .navbar {
+    background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+}
+
+.vacation-mode .card {
+    border-left: 4px solid #20c997;
+}
+
+.vacation-mode .stats-card {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.vacation-mode .btn-primary {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    border: none;
+}
+
+.vacation-mode .btn-primary:hover {
+    background: linear-gradient(135deg, #138496, #1e7e34);
+}
+
+/* Vacation mode indicator */
+.vacation-mode::before {
+    content: "🏖️ Mode Vacances Activé";
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    background: #20c997;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 1040;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Hide some advanced features in vacation mode */
+.vacation-mode .challenge-card,
+.vacation-mode #badgesContainer,
+.vacation-mode .btn-group .btn:not(:first-child) {
+    display: none !important;
+}
+
+.vacation-mode .quick-actions .col-md-3:nth-child(n+3) {
+    display: none !important;
+}
+}

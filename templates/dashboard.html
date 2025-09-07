@@ -185,15 +185,93 @@
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="row">
+<!-- Challenges Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>
+                    Défis du mois
+                </h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="createNewChallenge()">
+                    <i class="fas fa-plus me-1"></i>
+                    Nouveau défi
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row" id="challengesContainer">
+                    <!-- Challenges will be loaded here -->
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Chargement des défis...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badges Section -->
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
+                    <i class="fas fa-medal me-2"></i>
+                    Badges et récompenses
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="badgesContainer">
+                    <!-- Badges will be loaded here -->
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Chargement des badges...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="row mb-4" id="installBanner" style="display: none;">
+    <div class="col-12">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-mobile-alt me-2"></i>
+            <strong>Installer l'application !</strong> 
+            Ajoutez Dépenses Couple à votre écran d'accueil pour un accès rapide et des notifications.
+            <button type="button" class="btn btn-sm btn-primary ms-2" id="installApp" style="display: none;">
+                Installer
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Alerts -->
+<div class="row mb-4" id="validationAlerts">
+    <!-- Validation alerts will be loaded here -->
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
                     <i class="fas fa-bolt me-2"></i>
                     Actions rapides
                 </h5>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-info" onclick="expenseApp.createBackup()" title="Sauvegarder les données">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="toggleVacationMode()" title="Mode vacances">
+                        <i class="fas fa-umbrella-beach"></i>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="row text-center">
@@ -245,6 +323,145 @@
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+        
+        // Show install banner after a delay
+        setTimeout(() => {
+            const installBanner = document.getElementById('installBanner');
+            if (installBanner && !localStorage.getItem('installBannerDismissed')) {
+                installBanner.style.display = 'block';
+            }
+        }, 3000);
+        
+        // Load validation alerts
+        loadValidationAlerts();
+    });
+    
+    async function loadValidationAlerts() {
+        try {
+            // In a real implementation, this would be an API call
+            // For demo purposes, we'll create a sample alert
+            const hasValidations = Math.random() > 0.7; // 30% chance of having validations
+            
+            if (hasValidations) {
+                const alertContainer = document.getElementById('validationAlerts');
+                alertContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Validation en attente !</strong> 
+                            Une dépense de 250€ nécessite votre validation.
+                            <button type="button" class="btn btn-sm btn-warning ms-2" onclick="showValidationModal()">
+                                Examiner
+                            </button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading validation alerts:', error);
+        }
+    }
+    
+    function showValidationModal() {
+        // Simple validation modal for demonstration
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Validation de dépense
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="expense-validation">
+                            <h6>Dépense à valider :</h6>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <strong>Restaurant gastronomique</strong><br>
+                                <span class="text-danger">250,00€</span><br>
+                                <small class="text-muted">Demandé par Alex le ${new Date().toLocaleDateString('fr-FR')}</small><br>
+                                <small class="text-muted">Notes: "Dîner d'affaires important"</small>
+                            </div>
+                            <p>Cette dépense dépasse le seuil de 200€ et nécessite une validation.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" onclick="approveExpense()">
+                            <i class="fas fa-check me-1"></i>
+                            Approuver
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="rejectExpense()">
+                            <i class="fas fa-times me-1"></i>
+                            Rejeter
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Plus tard</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+    }
+    
+    function approveExpense() {
+        // Close validation alert and modal
+        document.querySelector('#validationAlerts .alert')?.remove();
+        document.querySelector('.modal.show .btn-close')?.click();
+        
+        if (window.expenseApp) {
+            window.expenseApp.showToast('success', 'Dépense approuvée !');
+        }
+    }
+    
+    function rejectExpense() {
+        // Close validation alert and modal
+        document.querySelector('#validationAlerts .alert')?.remove();
+        document.querySelector('.modal.show .btn-close')?.click();
+        
+        if (window.expenseApp) {
+            window.expenseApp.showToast('info', 'Dépense rejetée');
+        }
+    }
+    });
+    
+    function createNewChallenge() {
+        // Simple challenge creation - in real app would be a modal
+        const challengeData = {
+            name: 'Défi Économie',
+            description: 'Réduire les dépenses de divertissement de 20%',
+            category_id: 4, // Divertissement
+            target_amount: 150,
+            target_type: 'reduce'
+        };
+        
+        if (window.expenseApp) {
+            window.expenseApp.createChallenge(challengeData);
+        }
+    }
+    
+    function toggleVacationMode() {
+        const isVacationMode = localStorage.getItem('vacationMode') === 'true';
+        
+        if (isVacationMode) {
+            localStorage.removeItem('vacationMode');
+            document.body.classList.remove('vacation-mode');
+            window.expenseApp.showToast('info', 'Mode vacances désactivé');
+        } else {
+            localStorage.setItem('vacationMode', 'true');
+            document.body.classList.add('vacation-mode');
+            window.expenseApp.showToast('success', 'Mode vacances activé - Interface simplifiée');
+        }
+    }
     });
 </script>
 {% endblock %}

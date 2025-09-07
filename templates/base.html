@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dépenses Couple{% endblock %}</title>
     
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dépenses Couple">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -49,9 +57,40 @@
                             <i class="fas fa-piggy-bank me-1"></i>Budgets
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'calendar_view' %}active{% endif %}" href="{{ url_for('calendar_view') }}">
+                            <i class="fas fa-calendar-alt me-1"></i>Calendrier
+                        </a>
+                    </li>
                 </ul>
                 
                 <div class="navbar-nav">
+                    <div class="nav-item dropdown me-2">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="toggleVacationMode()">
+                                    <i class="fas fa-umbrella-beach me-2"></i>
+                                    <span id="vacationModeText">Mode vacances</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="expenseApp.createBackup()">
+                                    <i class="fas fa-download me-2"></i>
+                                    Sauvegarder
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('calendar_view') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Calendrier
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     <button class="btn btn-outline-light btn-sm" id="themeToggle">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
@@ -259,6 +298,88 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                        
+                        // Request notification permission
+                        if ('Notification' in window && 'PushManager' in window) {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === 'granted') {
+                                    console.log('Notification permission granted');
+                                }
+                            });
+                        }
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.getElementById('installApp');
+            if (installBtn) {
+                installBtn.style.display = 'block';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                });
+            }
+        });
+        
+        // Initialize vacation mode state
+        if (localStorage.getItem('vacationMode') === 'true') {
+            document.body.classList.add('vacation-mode');
+            updateVacationModeText(true);
+        }
+    });
+    
+    function toggleVacationMode() {
+        const isVacationMode = localStorage.getItem('vacationMode') === 'true';
+        
+        if (isVacationMode) {
+            localStorage.removeItem('vacationMode');
+            document.body.classList.remove('vacation-mode');
+            updateVacationModeText(false);
+            if (window.expenseApp) {
+                window.expenseApp.showToast('info', 'Mode vacances désactivé');
+            }
+        } else {
+            localStorage.setItem('vacationMode', 'true');
+            document.body.classList.add('vacation-mode');
+            updateVacationModeText(true);
+            if (window.expenseApp) {
+                window.expenseApp.showToast('success', 'Mode vacances activé - Interface simplifiée');
+            }
+        }
+    }
+    
+    function updateVacationModeText(isActive) {
+        const text = document.getElementById('vacationModeText');
+        if (text) {
+            text.innerHTML = isActive ? 
+                '<i class="fas fa-check me-1"></i>Mode vacances (actif)' : 
+                'Mode vacances';
+        }
+    }
+    </script>
     
     {% block scripts %}{% endblock %}
 </body>
