@@ -124,10 +124,29 @@
                                     <label for="expenseDate" class="form-label">Date</label>
                                     <input type="date" class="form-control" id="expenseDate" required>
                                 </div>
-                                <div class="form-check">
+                                <div class="mb-3">
+                                    <label for="expensePerson" class="form-label">Personne qui a dépensé</label>
+                                    <select class="form-select" id="expensePerson">
+                                        <option value="Non spécifié">Non spécifié</option>
+                                        <option value="Partenaire 1">Partenaire 1</option>
+                                        <option value="Partenaire 2">Partenaire 2</option>
+                                        <option value="Les deux">Les deux</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expenseNotes" class="form-label">Notes (optionnel)</label>
+                                    <textarea class="form-control" id="expenseNotes" rows="2" placeholder="Informations supplémentaires..."></textarea>
+                                </div>
+                                <div class="form-check mb-3">
                                     <input type="checkbox" class="form-check-input" id="expenseExceptional">
                                     <label class="form-check-label" for="expenseExceptional">
                                         Dépense exceptionnelle
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="expenseReimbursement">
+                                    <label class="form-check-label" for="expenseReimbursement">
+                                        Nécessite un remboursement
                                     </label>
                                 </div>
                             </form>

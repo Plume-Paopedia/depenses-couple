@@ -26,6 +26,9 @@ class Expense(db.Model):
     date = db.Column(db.Date, default=lambda: datetime.now(timezone.utc).date())
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     is_exceptional = db.Column(db.Boolean, default=False)
+    person = db.Column(db.String(100), default='Non spécifié')  # Who spent the money
+    needs_reimbursement = db.Column(db.Boolean, default=False)  # If expense needs reimbursement
+    notes = db.Column(db.String(500))  # Additional notes/options
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     category = db.relationship('Category', backref=db.backref('expenses', lazy=True))
@@ -164,7 +167,10 @@ def add_expense():
         description=data['description'],
         category_id=int(data['category_id']),
         is_exceptional=data.get('is_exceptional', False),
-        date=datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date()
+        date=datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date(),
+        person=data.get('person', 'Non spécifié'),
+        needs_reimbursement=data.get('needs_reimbursement', False),
+        notes=data.get('notes', '')
     )
     
     db.session.add(expense)
@@ -227,6 +233,9 @@ def update_expense(expense_id):
     expense.category_id = int(data['category_id'])
     expense.is_exceptional = data.get('is_exceptional', False)
     expense.date = datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date()
+    expense.person = data.get('person', 'Non spécifié')
+    expense.needs_reimbursement = data.get('needs_reimbursement', False)
+    expense.notes = data.get('notes', '')
     
     db.session.commit()
     return jsonify({'success': True, 'message': 'Expense updated successfully'})
@@ -314,6 +323,8 @@ def chart_categories():
 
 def init_database():
     """Initialize the database with default data"""
+    # Drop all tables and recreate them to ensure schema is up to date
+    db.drop_all()
     db.create_all()
     
     # Add default categories if they don't exist

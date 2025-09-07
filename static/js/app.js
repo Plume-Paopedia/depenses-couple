@@ -140,7 +140,10 @@ class ExpenseApp {
                     description: document.getElementById('expenseDescription').value,
                     category_id: document.getElementById('expenseCategory').value,
                     date: document.getElementById('expenseDate').value,
-                    is_exceptional: document.getElementById('expenseExceptional').checked
+                    is_exceptional: document.getElementById('expenseExceptional').checked,
+                    person: document.getElementById('expensePerson').value,
+                    needs_reimbursement: document.getElementById('expenseReimbursement').checked,
+                    notes: document.getElementById('expenseNotes').value
                 };
                 
                 // Check if we're editing an existing expense
