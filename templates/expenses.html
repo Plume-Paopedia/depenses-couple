@@ -128,11 +128,13 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                data-bs-toggle="tooltip" title="Modifier">
+                                                data-bs-toggle="tooltip" title="Modifier"
+                                                onclick="editExpense({{ expense.id }}, '{{ expense.description }}', {{ expense.amount }}, {{ expense.category_id }}, '{{ expense.date }}', {{ expense.is_exceptional|lower }})">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                data-bs-toggle="tooltip" title="Supprimer">
+                                                data-bs-toggle="tooltip" title="Supprimer"
+                                                onclick="deleteExpense({{ expense.id }})">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -279,5 +281,47 @@
             });
         }, 100);
     });
+
+    async function deleteExpense(expenseId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) return;
+        
+        try {
+            const response = await fetch(`/api/expenses/${expenseId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Erreur de connexion');
+        }
+    }
+
+    function editExpense(id, description, amount, categoryId, date, isExceptional) {
+        // Fill the quick add modal with current values
+        document.getElementById('expenseAmount').value = amount;
+        document.getElementById('expenseDescription').value = description;
+        document.getElementById('expenseCategory').value = categoryId;
+        document.getElementById('expenseDate').value = date;
+        document.getElementById('expenseExceptional').checked = isExceptional;
+        
+        // Store the expense ID for updating
+        window.editingExpenseId = id;
+        
+        // Change the submit button text
+        document.getElementById('quickAddSubmit').textContent = 'Modifier la dépense';
+        
+        // Activate the expense tab
+        document.querySelector('#expense-tab').click();
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('quickAddModal'));
+        modal.show();
+    }
 </script>
 {% endblock %}

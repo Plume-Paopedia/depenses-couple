@@ -91,7 +91,8 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="#">
+                                                <a class="dropdown-item" href="#"
+                                                   onclick="editSubscription({{ subscription.id }}, '{{ subscription.name }}', {{ subscription.amount }}, '{{ subscription.billing_cycle }}', {{ subscription.category_id }}, '{{ subscription.next_billing }}')">
                                                     <i class="fas fa-edit me-2"></i>Modifier
                                                 </a>
                                             </li>
@@ -102,7 +103,8 @@
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <a class="dropdown-item text-danger" href="#">
+                                                <a class="dropdown-item text-danger" href="#"
+                                                   onclick="deleteSubscription({{ subscription.id }})">
                                                     <i class="fas fa-trash me-2"></i>Supprimer
                                                 </a>
                                             </li>
@@ -195,53 +197,7 @@
     </div>
 </div>
 
-<!-- Popular Subscriptions -->
-{% if not subscriptions %}
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-star me-2"></i>
-                    Abonnements populaires
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 col-6 mb-3">
-                        <div class="text-center p-3 border rounded">
-                            <i class="fab fa-netflix fa-2x text-danger mb-2"></i>
-                            <h6>Netflix</h6>
-                            <small class="text-muted">~15.99€/mois</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-3">
-                        <div class="text-center p-3 border rounded">
-                            <i class="fab fa-spotify fa-2x text-success mb-2"></i>
-                            <h6>Spotify</h6>
-                            <small class="text-muted">~9.99€/mois</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-3">
-                        <div class="text-center p-3 border rounded">
-                            <i class="fab fa-amazon fa-2x text-warning mb-2"></i>
-                            <h6>Amazon Prime</h6>
-                            <small class="text-muted">~6.99€/mois</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-3">
-                        <div class="text-center p-3 border rounded">
-                            <i class="fab fa-apple fa-2x text-dark mb-2"></i>
-                            <h6>Apple Music</h6>
-                            <small class="text-muted">~10.99€/mois</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+
 
 <!-- Calendar View (Future Enhancement) -->
 {% if subscriptions %}
@@ -326,5 +282,47 @@
             });
         }, 500);
     });
+
+    async function deleteSubscription(subscriptionId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cet abonnement ?')) return;
+        
+        try {
+            const response = await fetch(`/api/subscriptions/${subscriptionId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Erreur de connexion');
+        }
+    }
+
+    function editSubscription(id, name, amount, billingCycle, categoryId, nextBilling) {
+        // Fill the quick add modal with current values
+        document.getElementById('subscriptionName').value = name;
+        document.getElementById('subscriptionAmount').value = amount;
+        document.getElementById('subscriptionCycle').value = billingCycle;
+        document.getElementById('subscriptionCategory').value = categoryId;
+        document.getElementById('subscriptionNextBilling').value = nextBilling;
+        
+        // Store the subscription ID for updating
+        window.editingSubscriptionId = id;
+        
+        // Change the submit button text
+        document.getElementById('quickAddSubmit').textContent = 'Modifier l\'abonnement';
+        
+        // Activate the subscription tab
+        document.querySelector('#subscription-tab').click();
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('quickAddModal'));
+        modal.show();
+    }
 </script>
 {% endblock %}

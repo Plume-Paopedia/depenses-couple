@@ -210,6 +210,48 @@ def add_budget():
     
     return jsonify({'success': True, 'message': 'Budget updated successfully'})
 
+@app.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
+def delete_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Expense deleted successfully'})
+
+@app.route('/api/expenses/<int:expense_id>', methods=['PUT'])
+def update_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    data = request.get_json()
+    
+    expense.amount = float(data['amount'])
+    expense.description = data['description']
+    expense.category_id = int(data['category_id'])
+    expense.is_exceptional = data.get('is_exceptional', False)
+    expense.date = datetime.strptime(data.get('date', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d').date()
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Expense updated successfully'})
+
+@app.route('/api/subscriptions/<int:subscription_id>', methods=['DELETE'])
+def delete_subscription(subscription_id):
+    subscription = Subscription.query.get_or_404(subscription_id)
+    db.session.delete(subscription)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Subscription deleted successfully'})
+
+@app.route('/api/subscriptions/<int:subscription_id>', methods=['PUT'])
+def update_subscription(subscription_id):
+    subscription = Subscription.query.get_or_404(subscription_id)
+    data = request.get_json()
+    
+    subscription.name = data['name']
+    subscription.amount = float(data['amount'])
+    subscription.billing_cycle = data['billing_cycle']
+    subscription.category_id = int(data['category_id'])
+    subscription.next_billing = datetime.strptime(data['next_billing'], '%Y-%m-%d').date()
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Subscription updated successfully'})
+
 @app.route('/api/income', methods=['POST'])
 def add_income():
     data = request.get_json()
